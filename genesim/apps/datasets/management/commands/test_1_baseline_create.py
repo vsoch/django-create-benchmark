@@ -9,6 +9,7 @@ import numpy
 
 from genesim.apps.datasets.models import Gene, GeneSimilarity
 
+
 def load_h5(file_path, verbose=True):
 
     output = {}
@@ -29,7 +30,12 @@ def create_sims(genes):
     """Create a random matrix of values, they aren't actually similarity values
     """
     # Create a random valued matrix
-    matrix = numpy.random.randn(len(genes), len(genes))
+    matrix = numpy.random.uniform(size=(len(genes), len(genes)))
+    matrix = (matrix + matrix.T) - 1
+
+    # Set diagonals to 1
+    for x in range(len(genes)):
+        matrix[x, x] = 1
 
     # Create a pandas data frame for fake similarity scores
     df = pandas.DataFrame(matrix)
@@ -41,11 +47,9 @@ def create_sims(genes):
 
 
 class Command(BaseCommand):
-
     def add_arguments(self, parser):
         parser.add_argument("genes_json", type=str)
         parser.add_argument("output_file", type=str)
- 
 
     def handle(self, *args, **options):
 
@@ -57,13 +61,13 @@ class Command(BaseCommand):
 
         # All three inputs are required
         if not output_file or not genes_json:
-            sys.exit(f"genes_json, and output_file are required")
-  
+            sys.exit("genes_json, and output_file are required")
+
         # Similarity scores are required
         if not os.path.exists(genes_json):
-            sys.exit(f"genes.json is required.")
+            sys.exit("genes.json is required.")
 
-        with open(genes_json, 'r') as fd:
+        with open(genes_json, "r") as fd:
             genes = json.loads(fd.read())
 
         print(f"Creating {len(genes)} genes...")
@@ -77,16 +81,17 @@ class Command(BaseCommand):
         total = Gene.objects.count()
 
         # metric 1: time to create genes in seconds
-        create_genes_time = end-start
+        create_genes_time = end - start
 
         print(f"Created {total} genes in {create_genes_time} seconds.")
 
         data = create_sims(genes)
         print("Creating similarties...")
 
-        import IPython
-        IPython.embed()
-
+        # Note that we are using django get_or_create, which to start off isn't
+        # as efficient as just doing a create. We do this because we are going
+        # over all cells in the matrix, and will need to geta value if already
+        # exists. This is the likely approach that a naive user would take.
         start = time.time()
         for i, name1 in enumerate(data.index.tolist()):
 
@@ -101,25 +106,22 @@ class Command(BaseCommand):
                 # Save diagonal both ways (this is artifically done for the test)
                 # We want to test filling in an entire matrix, even if redundant
                 GeneSimilarity.objects.get_or_create(
-                            gene1=gene1,
-                            gene2=gene2,
-                            score=score,
-                            metric="cosine", # not really cosine :)
+                    gene1=gene1,
+                    gene2=gene2,
+                    score=score,
+                    metric="cosine",  # not really cosine :)
                 )
                 GeneSimilarity.objects.get_or_create(
-                            gene1=gene2,
-                            gene2=gene1,
-                            score=score,
-                            metric="cosine",
+                    gene1=gene2, gene2=gene1, score=score, metric="cosine",
                 )
 
         env = time.time()
         total = GeneSimilarity.objects.count()
-        create_sims_time = end-start
+        create_sims_time = end - start
         print(f"Created {total} genes similarities in {create_sims_time} seconds.")
 
         # Save to output file
-        with open(output_file, 'w') as fd:
+        with open(output_file, "w") as fd:
             fd.writelines("metric,seconds")
             fd.writelines(f"baseline_create_genes,{create_genes_time}")
             fd.writelines(f"baseline_create_sims,{create_sims_time}")

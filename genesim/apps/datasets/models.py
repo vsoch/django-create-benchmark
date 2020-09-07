@@ -4,6 +4,7 @@ from django.core.exceptions import FieldError
 from django.db.models import Q
 from django.db import models
 
+
 class Dataset(models.Model):
     name = models.CharField(max_length=500, null=True, blank=True, unique=True)
 
@@ -58,9 +59,8 @@ class GeneSimilarity(models.Model):
                 raise FieldError(
                     "score for a gene similarity cannot be a null or empty value."
                 )
-            # If you wanted to just save the diagonal, you could order the 
+            # If you wanted to just save the diagonal, you could order the
             # systematic names here and then it would raise an error
-
 
         super(GeneSimilarity, self).save(*args, **kwargs)
 
