@@ -45,7 +45,6 @@ class GeneSimilarity(models.Model):
     )
     metric = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=10, decimal_places=3)
-    pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
     def save(self, *args, **kwargs):
         """Override the save function to ensure that only one similarity score
@@ -71,14 +70,3 @@ class GeneSimilarity(models.Model):
             "gene2",
             "metric",
         )
-
-
-class Data(models.Model):
-    dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
-    value = models.DecimalField(max_digits=10, decimal_places=3)
-    gene = models.ForeignKey(
-        "datasets.Gene", null=True, blank=True, on_delete=models.DO_NOTHING
-    )
-
-    def __str__(self):
-        return "%s - %s" % (self.orf, self.value)
