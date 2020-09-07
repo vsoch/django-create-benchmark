@@ -1,0 +1,5 @@
+export DJANGO_SECRET_KEY=123456123456123456123456123456123456
+export DATABASE_HOST=localhost
+export POSTGRES_USER=djangotester
+export POSTGRES_PASSWORD=djangotester
+export POSTGRES_DB=djangotester

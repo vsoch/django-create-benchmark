@@ -1,0 +1,6 @@
+.env
+/static
+migrations
+__pycache__
+/env
+/app.yaml

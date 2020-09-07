@@ -1,0 +1,6 @@
+Django==3.0.8
+django-extensions==3.0.2
+# just for postgres
+psycopg2-binary==2.8.5
+pandas==1.1.1
+tables==3.6.1

@@ -1,0 +1,14 @@
+version: '3'
+
+# This docker-compose is for development only!
+# You can also run a standard docker run command, see https://hub.docker.com/_/postgres
+# This is easier to do just: docker-compose up -d
+
+services:
+  postgres: 
+    image: postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    restart: always
