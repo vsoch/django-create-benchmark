@@ -10,24 +10,10 @@ import numpy
 from genesim.apps.datasets.models import Gene, GeneSimilarity
 
 
-def load_h5(file_path, verbose=True):
-
-    output = {}
-
-    with pandas.HDFStore(file_path) as store:
-        ks = store.keys()
-
-    for k in ks:
-        k = k.lstrip("\/")
-        if verbose:
-            print(k)
-        output[k] = pandas.read_hdf(file_path, k)
-
-    return output
-
-
 def create_sims(genes):
-    """Create a random matrix of values, they aren't actually similarity values
+    """Create a random matrix of values, they will be between -1 and 1,
+       with diagonals 1, but won't satisfy the triangle inequality (we don't
+       really need to).
     """
     # Create a random valued matrix
     matrix = numpy.random.uniform(size=(len(genes), len(genes)))
@@ -93,6 +79,16 @@ class Command(BaseCommand):
         # over all cells in the matrix, and will need to geta value if already
         # exists. This is the likely approach that a naive user would take.
         start = time.time()
+
+        # Create diagonals first
+        print("Creating diagonals...")
+        for i, name1 in enumerate(data.index.tolist()):
+            gene1, _ = Gene.objects.get_or_create(systematic_name=name1)
+            GeneSimilarity.objects.get_or_create(
+                gene1=gene1, gene2=gene1, score=1.0, metric="cosine"
+            )
+
+        print("Filling matrix...")
         for i, name1 in enumerate(data.index.tolist()):
 
             print(f"Parsing gene {i} of {total}...")
@@ -100,28 +96,30 @@ class Command(BaseCommand):
             for name2 in data.index.tolist():
                 gene2, _ = Gene.objects.get_or_create(systematic_name=name2)
 
+                # Only process when genes equal (similarity 1) or sorted order
+                if gene1.systematic_name > gene2.systematic_name or gene1 == gene2:
+                    continue
+
                 # Grab the pvalue and score
                 score = round(float(data.loc[name1, name2]), 3)
 
                 # Save diagonal both ways (this is artifically done for the test)
                 # We want to test filling in an entire matrix, even if redundant
                 GeneSimilarity.objects.get_or_create(
-                    gene1=gene1,
-                    gene2=gene2,
-                    score=score,
-                    metric="cosine",  # not really cosine :)
+                    gene1=gene1, gene2=gene2, score=score, metric="cosine"
                 )
                 GeneSimilarity.objects.get_or_create(
                     gene1=gene2, gene2=gene1, score=score, metric="cosine",
                 )
 
-        env = time.time()
-        total = GeneSimilarity.objects.count()
+        end = time.time()
+        total_sims = GeneSimilarity.objects.count()
+        total_genes = Gene.objects.count()
         create_sims_time = end - start
-        print(f"Created {total} genes similarities in {create_sims_time} seconds.")
+        print(f"Created {total_sims} genes similarities in {create_sims_time} seconds.")
 
         # Save to output file
         with open(output_file, "w") as fd:
-            fd.writelines("metric,seconds")
-            fd.writelines(f"baseline_create_genes,{create_genes_time}")
-            fd.writelines(f"baseline_create_sims,{create_sims_time}")
+            fd.writelines("metric,seconds,count\n")
+            fd.writelines(f"baseline_create_genes,{create_genes_time},{total_genes}\n")
+            fd.writelines(f"baseline_create_sims,{create_sims_time},{total_sims}\n")

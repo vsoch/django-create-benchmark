@@ -47,23 +47,6 @@ class GeneSimilarity(models.Model):
     metric = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=10, decimal_places=3)
 
-    def save(self, *args, **kwargs):
-        """Override the save function to ensure that only one similarity score
-           for any pair of genes can be created. If a different ordering is 
-           presented, it is fixed and we get an integrity error.
-        """
-        # Only update order if not in databsase yet, ensure genes ordered by name
-        if not self.pk:
-
-            if self.score in [None, "", "nan"]:
-                raise FieldError(
-                    "score for a gene similarity cannot be a null or empty value."
-                )
-            # If you wanted to just save the diagonal, you could order the
-            # systematic names here and then it would raise an error
-
-        super(GeneSimilarity, self).save(*args, **kwargs)
-
     class Meta:
         unique_together = (
             "gene1",
