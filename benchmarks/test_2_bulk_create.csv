@@ -1,0 +1,3 @@
+metric,seconds,count
+bulk_create_genes,0.25313305854797363,6500
+bulk_create_sims,26199.211995124817,42250000
