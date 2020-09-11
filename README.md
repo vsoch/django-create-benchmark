@@ -243,10 +243,10 @@ putting them in a file to stream (5.90 hours).
 |bulk_create_sims|7.28 hours| 42250000 similarity scores | creating similarity scores with bulk_create for each row of genes |
 |copyfrom_create_genes|0.056 seconds|6500 genes | creating genes with one copyfrom list|
 |copyfrom_create_sims|6.681 hours | 42250000 similarity scores| using copyfrom with StringIO (per row of genes)|
-|copyfromfile_create_diagonal_sims|4.66 seconds|6500| StringIO and copy from for matrix diagonal|
-|copyfromfile_write_genes_file|5.90 hours|42243500| writing all other gene sims to a text file|
-|copyfromfile_create_genes|0.056 seconds|6500| creating genes with one copyfrom list|
-|copyfromfile_create_sims|23.29 minutes|42250000|creating similiarties with copyfrom directly from file|
+|copyfromfile_create_diagonal_sims|4.66 seconds|6500 diagonal similarities| StringIO and copy from for matrix diagonal|
+|copyfromfile_write_genes_file|5.90 hours|42243500 gene similarites (not including diagonals)| writing all other gene sims to a text file|
+|copyfromfile_create_genes|0.056 seconds|6500 genes| creating genes with one copyfrom list|
+|copyfromfile_create_sims|23.29 minutes|42250000 total gene similarities|creating similiarties with copyfrom directly from file|
 
 Indeed, the operation to write the final scores is speedy! If we can find a fast way to
 produce the large file, this seems like a possible solution.
