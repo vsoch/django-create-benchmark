@@ -1,0 +1,5 @@
+metric,seconds,count
+copyfromfile_create_diagonal_sims,4.661763906478882,6500
+copyfromfile_write_genes_file,21556.047443389893,42243500
+copyfromfile_create_genes,0.05623435974121094,6500
+copyfromfile_create_sims,1397.6274900436401,42250000
